@@ -1,126 +1,132 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>MAMRAM - טופס כניסה</title>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --navy: #08172e;
-  --mint: #4ecdc4;
-  --cyan: #00d4ff;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAMRAM - מערכת דיווח</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #08172e;
+            --mint: #4ecdc4;
+            --cyan: #00d4ff;
+        }
 
-* { box-sizing: border-box; font-family: 'Heebo', sans-serif; }
+        * { box-sizing: border-box; font-family: 'Heebo', sans-serif; }
 
-body {
-  margin: 0;
-  height: 100vh;
-  background:
-    radial-gradient(circle at 20% 20%, #122f5a, transparent 40%),
-    radial-gradient(circle at 80% 80%, #08172e, transparent 40%),
-    linear-gradient(180deg, #020916, #050f22);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  direction: rtl;
-  overflow: hidden;
-}
+        body {
+            margin: 0;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 20%, #122f5a, transparent 40%), linear-gradient(180deg, #020916, #050f22);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
 
-.bubbles { position: absolute; inset: 0; pointer-events: none; }
-.bubble {
-  position: absolute; border-radius: 50%; opacity: 0.25; filter: blur(1px); transform-origin: 0 0;
-}
-@keyframes orbit { from { transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); } to { transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); } }
+        .splash-card {
+            padding: 40px 30px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            z-index: 10;
+        }
 
-.splash-wrapper { position: relative; z-index: 2; animation: floatSoft 6s ease-in-out infinite; text-align: center; }
-@keyframes floatSoft { 0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);} }
+        h1 { font-size: 42px; margin-bottom: 20px; color: var(--navy); }
 
-.splash-card {
-  padding: 40px 30px;
-  border-radius: 22px;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.6);
-  max-width: 400px;
-  transition: all 0.4s ease;
-}
+        button {
+            padding: 14px 0; font-size: 18px; font-weight: 700; border-radius: 36px;
+            cursor: pointer; border: none; width: 100%; transition: 0.25s; margin-bottom: 12px;
+        }
 
-h1 { font-size: 48px; margin-bottom: 20px; color: var(--navy); }
+        .teacher { background: linear-gradient(135deg, var(--navy), #103b73); color: white; }
+        .student { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; }
+        .submit { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; margin-top: 10px; }
 
-button {
-  padding: 14px 0; font-size: 18px; font-weight: 700; border-radius: 36px;
-  cursor: pointer; border: none; width: 100%; transition: all 0.25s ease; margin-bottom: 12px;
-}
-button:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
-
-button.teacher { background: linear-gradient(135deg, var(--navy), #103b73); color: white; }
-button.student { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; }
-
-form { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-input, textarea {
-  padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; width: 100%;
-}
-input:focus, textarea:focus { outline: none; border-color: var(--mint); box-shadow: 0 0 5px var(--mint); }
-
-button.submit { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; font-weight: 700; margin-top: 10px; }
-</style>
+        form { display: none; flex-direction: column; gap: 12px; }
+        input, textarea { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; width: 100%; }
+        
+        #statusMessage { margin-top: 10px; font-size: 14px; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-<div class="bubbles" id="bubbles"></div>
-
-<div class="splash-wrapper">
-  <div class="splash-card">
+<div class="splash-card">
     <h1>MAMRAM</h1>
     
-    <!-- בחירת סוג משתמש -->
     <div id="loginOptions">
-      <button class="teacher" onclick="showForm('מורה')">כניסת מורה</button>
-      <button class="student" onclick="showForm('תלמיד')">כניסת תלמיד</button>
+        <button class="teacher" onclick="showForm('מורה')">כניסת מורה</button>
+        <button class="student" onclick="showForm('תלמיד')">כניסת תלמיד</button>
     </div>
 
-    <!-- טופס -->
-    <form id="loginForm" style="display:none;">
-      <h2 id="formTitle" style="margin-bottom:10px; color: var(--navy);"></h2>
-      <input type="text" name="name" placeholder="שם" required>
-      <input type="email" name="email" placeholder="אימייל" required>
-      <textarea name="message" placeholder="הודעה" rows="3"></textarea>
-      <button type="submit" class="submit">שלח</button>
+    <form id="loginForm">
+        <h2 id="formTitle" style="color: var(--navy); margin-bottom: 15px;"></h2>
+        <input type="hidden" name="user_type" id="userTypeInput">
+        <input type="text" name="class_name" placeholder="הכיתה שלך" required>
+        <input type="text" name="victim_class" placeholder="כיתת הילד הנפגע" required>
+        <textarea name="message" placeholder="פירוט המקרה..." rows="3" required></textarea>
+        <button type="submit" class="submit">שלח דיווח</button>
+        <a href="#" onclick="location.reload()" style="font-size: 13px; color: gray;">חזור</a>
     </form>
-
-  </div>
+    
+    <div id="statusMessage"></div>
 </div>
 
 <script>
-// בועות רקע
-const bubbleContainer = document.getElementById('bubbles');
-const colors = ['var(--mint)', 'var(--cyan)'];
-for (let i=0;i<150;i++){
-  const bubble=document.createElement('div'); bubble.classList.add('bubble');
-  const size=Math.random()*8+2;
-  bubble.style.width=`${size}px`; bubble.style.height=`${size}px`;
-  bubble.style.top='50%'; bubble.style.left='50%';
-  bubble.style.setProperty('--radius',`${Math.random()*300+50}px`);
-  bubble.style.background=colors[Math.floor(Math.random()*colors.length)];
-  bubble.style.animation=`orbit ${Math.random()*50+10}s linear infinite ${Math.random()<0.5?'reverse':''}`;
-  bubbleContainer.appendChild(bubble);
-}
+    // פונקציה להצגת הטופס
+    function showForm(type) {
+        document.getElementById('loginOptions').style.display = 'none';
+        document.getElementById('formTitle').innerText = `דיווח ${type}`;
+        document.getElementById('userTypeInput').value = type;
+        document.getElementById('loginForm').style.display = 'flex';
+    }
 
-// הצגת טופס
-function showForm(type){
-  document.getElementById('loginOptions').style.display='none';
-  const form = document.getElementById('loginForm');
-  document.getElementById('formTitle').innerText=`כניסת ${type}`;
-  form.style.display='flex';
-}
+    // טיפול בשליחת הטופס
+    document.getElementById('loginForm').onsubmit = function(event) {
+        event.preventDefault(); // מניעת רענון דף
 
-// שליחת טופס
-document.getElementById('loginForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  alert("הטופס נשלח בהצלחה!");
-  this.reset();
-});
+        const status = document.getElementById('statusMessage');
+        status.innerText = "מעבד נתונים...";
+        status.style.color = "orange";
+
+        // 1. איסוף הנתונים מהשדות
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        data.timestamp = new Date().toLocaleString('he-IL');
+
+        // 2. המרה ל-JSON
+        const jsonData = JSON.stringify(data, null, 2);
+        
+        // הדפסה לקונסול (F12) - כדי שתראה שזה עובד
+        console.log("JSON שנוצר:", jsonData);
+
+        // 3. הצגת הודעה עם ה-JSON (למקרה שאין שרת)
+        alert("הנתונים נאספו בפורמט JSON:\n" + jsonData);
+
+        // 4. שליחה לשרת (מול ה-DevOps)
+        fetch('/save-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: jsonData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('השרת לא זמין');
+            return response.json();
+        })
+        .then(result => {
+            status.innerText = "נשלח בהצלחה לשרת!";
+            status.style.color = "green";
+            setTimeout(() => location.reload(), 2000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            status.innerText = "ה-JSON מוכן, אך השרת לא מופעל.";
+            status.style.color = "red";
+        });
+    };
 </script>
 
 </body>
