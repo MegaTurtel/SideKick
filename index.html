@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAMRAM - מערכת דיווח</title>
+    <title>MAMRAM - מערכת דיווח וניהול</title>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,117 +16,171 @@
 
         body {
             margin: 0;
-            height: 100vh;
+            min-height: 100vh;
             background: radial-gradient(circle at 20% 20%, #122f5a, transparent 40%), linear-gradient(180deg, #020916, #050f22);
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            padding: 20px;
         }
 
         .splash-card {
-            padding: 40px 30px;
+            padding: 30px;
             border-radius: 22px;
             background: rgba(255, 255, 255, 0.95);
             box-shadow: 0 25px 50px rgba(0,0,0,0.4);
-            max-width: 400px;
-            width: 90%;
+            max-width: 800px; /* מורחב כדי שיהיה מקום לטבלה */
+            width: 100%;
             text-align: center;
-            z-index: 10;
+            transition: 0.3s ease;
         }
 
-        h1 { font-size: 42px; margin-bottom: 20px; color: var(--navy); }
+        h1 { font-size: 36px; margin-bottom: 20px; color: var(--navy); }
 
         button {
-            padding: 14px 0; font-size: 18px; font-weight: 700; border-radius: 36px;
-            cursor: pointer; border: none; width: 100%; transition: 0.25s; margin-bottom: 12px;
+            padding: 12px 24px; font-size: 18px; font-weight: 700; border-radius: 36px;
+            cursor: pointer; border: none; transition: 0.25s; margin: 10px;
         }
 
-        .teacher { background: linear-gradient(135deg, var(--navy), #103b73); color: white; }
-        .student { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; }
-        .submit { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; margin-top: 10px; }
+        .teacher-btn { background: var(--navy); color: white; }
+        .student-btn { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; }
+        .submit-btn { background: linear-gradient(135deg, var(--mint), var(--cyan)); color: #043534; width: 100%; }
 
-        form { display: none; flex-direction: column; gap: 12px; }
-        input, textarea { padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; width: 100%; }
-        
-        #statusMessage { margin-top: 10px; font-size: 14px; font-weight: bold; }
+        /* אזורי תוכן */
+        #loginOptions { display: block; }
+        #studentForm { display: none; flex-direction: column; gap: 10px; text-align: right; }
+        #teacherDashboard { display: none; flex-direction: column; text-align: right; }
+
+        input, textarea { padding: 12px; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 16px; }
+
+        /* עיצוב טבלה למורה */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        th, td { padding: 12px; border: 1px solid #eee; text-align: right; }
+        th { background: var(--navy); color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+
+        .back-link { display: block; margin-top: 20px; color: gray; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="splash-card">
+<div class="splash-card" id="mainCard">
     <h1>MAMRAM</h1>
     
     <div id="loginOptions">
-        <button class="teacher" onclick="showForm('מורה')">כניסת מורה</button>
-        <button class="student" onclick="showForm('תלמיד')">כניסת תלמיד</button>
+        <button class="teacher-btn" onclick="showTeacher()">כניסת מורה (צפייה בדיווחים)</button>
+        <button class="student-btn" onclick="showStudent()">כניסת תלמיד (דיווח חדש)</button>
     </div>
 
-    <form id="loginForm">
-        <h2 id="formTitle" style="color: var(--navy); margin-bottom: 15px;"></h2>
-        <input type="hidden" name="user_type" id="userTypeInput">
-        <input type="text" name="class_name" placeholder="הכיתה שלך" required>
-        <input type="text" name="victim_class" placeholder="כיתת הילד הנפגע" required>
-        <textarea name="message" placeholder="פירוט המקרה..." rows="3" required></textarea>
-        <button type="submit" class="submit">שלח דיווח</button>
-        <a href="#" onclick="location.reload()" style="font-size: 13px; color: gray;">חזור</a>
+    <form id="studentForm">
+        <h2 style="color: var(--navy)">דיווח חדש</h2>
+        <input type="text" id="className" placeholder="הכיתה שלך" required>
+        <input type="text" id="victimClass" placeholder="כיתת הנפגע" required>
+        <textarea id="msg" placeholder="פירוט המקרה..." rows="3" required></textarea>
+        <button type="submit" class="submit-btn">שלח דיווח</button>
+        <span class="back-link" onclick="resetUI()">חזור</span>
     </form>
-    
-    <div id="statusMessage"></div>
+
+    <div id="teacherDashboard">
+        <h2 style="color: var(--navy)">דיווחים שהתקבלו במערכת</h2>
+        <div style="overflow-x: auto;">
+            <table id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>זמן</th>
+                        <th>מדווח</th>
+                        <th>כיתת נפגע</th>
+                        <th>הודעה</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
+        <button onclick="clearData()" style="background: #ff4d4d; color: white; font-size: 14px; margin-top: 10px;">מחק את כל הדיווחים</button>
+        <span class="back-link" onclick="resetUI()">חזור לתפריט</span>
+    </div>
 </div>
 
 <script>
-    // פונקציה להצגת הטופס
-    function showForm(type) {
+    // --- ניהול תצוגה ---
+    function showStudent() {
         document.getElementById('loginOptions').style.display = 'none';
-        document.getElementById('formTitle').innerText = `דיווח ${type}`;
-        document.getElementById('userTypeInput').value = type;
-        document.getElementById('loginForm').style.display = 'flex';
+        document.getElementById('studentForm').style.display = 'flex';
     }
 
-    // טיפול בשליחת הטופס
-    document.getElementById('loginForm').onsubmit = function(event) {
-        event.preventDefault(); // מניעת רענון דף
+    function showTeacher() {
+        document.getElementById('loginOptions').style.display = 'none';
+        document.getElementById('teacherDashboard').style.display = 'flex';
+        renderTable();
+    }
 
-        const status = document.getElementById('statusMessage');
-        status.innerText = "מעבד נתונים...";
-        status.style.color = "orange";
+    function resetUI() {
+        document.getElementById('loginOptions').style.display = 'block';
+        document.getElementById('studentForm').style.display = 'none';
+        document.getElementById('teacherDashboard').style.display = 'none';
+    }
 
-        // 1. איסוף הנתונים מהשדות
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-        data.timestamp = new Date().toLocaleString('he-IL');
+    // --- ניהול נתונים (LocalStorage) ---
+    
+    // שליחת דיווח
+    document.getElementById('studentForm').onsubmit = function(e) {
+        e.preventDefault();
 
-        // 2. המרה ל-JSON
-        const jsonData = JSON.stringify(data, null, 2);
-        
-        // הדפסה לקונסול (F12) - כדי שתראה שזה עובד
-        console.log("JSON שנוצר:", jsonData);
+        const newReport = {
+            time: new Date().toLocaleString('he-IL'),
+            from: document.getElementById('className').value,
+            victim: document.getElementById('victimClass').value,
+            message: document.getElementById('msg').value
+        };
 
-        // 3. הצגת הודעה עם ה-JSON (למקרה שאין שרת)
-        alert("הנתונים נאספו בפורמט JSON:\n" + jsonData);
+        // שמירה מקומית (בדפדפן)
+        let reports = JSON.parse(localStorage.getItem('mamram_reports')) || [];
+        reports.push(newReport);
+        localStorage.setItem('mamram_reports', JSON.stringify(reports));
 
-        // 4. שליחה לשרת (מול ה-DevOps)
-        fetch('/save-report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: jsonData
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('השרת לא זמין');
-            return response.json();
-        })
-        .then(result => {
-            status.innerText = "נשלח בהצלחה לשרת!";
-            status.style.color = "green";
-            setTimeout(() => location.reload(), 2000);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            status.innerText = "ה-JSON מוכן, אך השרת לא מופעל.";
-            status.style.color = "red";
-        });
+        alert("הדיווח נשלח ונשמר במערכת!");
+        this.reset();
+        resetUI();
     };
+
+    // הצגת הטבלה למורה
+    function renderTable() {
+        const reports = JSON.parse(localStorage.getItem('mamram_reports')) || [];
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        if (reports.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">אין דיווחים במערכת</td></tr>';
+            return;
+        }
+
+        reports.reverse().forEach(report => {
+            const row = `<tr>
+                <td>${report.time}</td>
+                <td>${report.from}</td>
+                <td>${report.victim}</td>
+                <td>${report.message}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function clearData() {
+        if(confirm("האם אתה בטוח שברצונך למחוק את כל הנתונים?")) {
+            localStorage.removeItem('mamram_reports');
+            renderTable();
+        }
+    }
 </script>
 
 </body>
